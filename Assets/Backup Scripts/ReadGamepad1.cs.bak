@@ -1,0 +1,130 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using UnityEngine;
+
+public class ReadGamepad1 : MonoBehaviour
+{
+    const string EXE_PATH = "joystick_SNESInputTracker.sh";
+    const string EXE_ARGS = "";
+
+    DebugToScreen theDebugToScreen;
+    string previousInput = "";
+    string latestInput = "";
+    List<string> inputList;
+    
+    Process gamepadProc;
+    bool isSomeoneLookingForInput = false;
+
+    private void Start()
+    {
+        theDebugToScreen = FindObjectOfType<DebugToScreen>();
+        SetCurrentDirectory();
+        Thread readInputThread = new Thread(RunGamepadReader);
+        readInputThread.Start();
+    }
+
+    private void Update()
+    {
+        UpdateInputList();
+    }
+
+    private void OnApplicationQuit()
+    {
+        KillInputReaderOnExit();
+    }
+
+   
+    private void SetCurrentDirectory()
+    {
+        Directory.SetCurrentDirectory(
+            Application.dataPath + 
+            "/Resources/Read Joypad Input/"
+            );
+    }
+
+    private void RunGamepadReader()
+    {
+        /*
+         * Start the process to read gamepad input.
+         */
+        ProcessStartInfo startInfo = new ProcessStartInfo
+        {
+            FileName = EXE_PATH,
+            Arguments = EXE_ARGS,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+    };
+        gamepadProc = Process.Start(startInfo);
+
+        StreamReader reader = gamepadProc.StandardOutput;
+        while (!gamepadProc.HasExited)
+        {
+            latestInput = reader.ReadLine();
+            
+            isSomeoneLookingForInput = false;
+        }
+        latestInput = "You've killed me!";
+    }
+
+    private void UpdateInputList()
+    {
+        /*
+         * Break the input by its delimiter and convert all but the first 
+         * element into integers.
+         */
+        if (latestInput != previousInput)
+        {
+            //theDebugToScreen.SetDebugText(latestInput);
+            previousInput = latestInput;
+
+            inputList = latestInput.Split(',').ToList();
+        }
+    }
+
+    private void KillInputReaderOnExit()
+    {
+        gamepadProc.Kill();
+
+        Process killProcess;
+        ProcessStartInfo startInfo = new ProcessStartInfo
+        {
+            FileName = "killall",
+            Arguments = "joystick_SNESInputTracker",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        killProcess = Process.Start(startInfo);
+    }
+
+    public List<string> GetInput()
+    {
+        /*
+         * Used to set the input to a button.  This method will wait until 
+         * the user presses a gamepad input before proceeding.
+         */
+        isSomeoneLookingForInput = true;
+        // Wait for the input to be available.
+        while (isSomeoneLookingForInput)
+        {
+            continue;
+        }
+
+        UpdateInputList();
+        return inputList;
+    }
+
+    public List<string> CheckInput()
+    {
+        /*
+         * Return whatever the latest input from the gamepad is.
+         */
+        return inputList;
+    }
+}
