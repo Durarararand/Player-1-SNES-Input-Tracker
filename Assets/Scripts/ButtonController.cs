@@ -12,14 +12,22 @@ public class ButtonController : MonoBehaviour
     const int AXIS_NAME_INDEX = 1;
     const int X_AXIS_INDEX = 2;
     const int Y_AXIS_INDEX = 3;
+    const int KEY_IDENTIFIER_INDEX = 0;
+    const int KEY_INDEX = 1;
     const string BUTTON_IDENTIFIER = "Button";
     const int BUTTON_IDENTIFIER_INDEX = 0;
     const int BUTTON_INDEX = 1;
     const float BUTTON_ALPHA_ON = 0.6f;
     const float BUTTON_ALPHA_OFF = 0f;
 
-    //DebugToScreen theDebugToScreen;
-    ReadGamepad theReadGamepad;
+    enum KeyIdentifier
+    {
+        PRESSED,
+        RELEASED
+    }
+
+    DebugDisplay theDebugDisplay;
+    InputReaderController theInputReaderController;
     ColorBlock buttonColors;
     float buttonAlpha;
 
@@ -27,14 +35,16 @@ public class ButtonController : MonoBehaviour
     List<string> latestInputList;
     bool isAxis = false;
     bool isButton = false;
-    bool isButtonPressed = false;
-    bool previousButtonPressState = false;
+    bool isKey = false;
+    bool isInputPressed = false;
+    bool previousInputPressState = false;
     int inputQueueIndex = 0;
 
     private void Start()
     {
-        //theDebugToScreen = FindObjectOfType<DebugToScreen>();
-        theReadGamepad = FindObjectOfType<ReadGamepad>();
+        theDebugDisplay = FindObjectOfType<DebugDisplay>();
+        theInputReaderController = 
+            FindObjectOfType<InputReaderController>();
         buttonColors = GetComponentInParent<Button>().colors;
     }
 
@@ -46,21 +56,31 @@ public class ButtonController : MonoBehaviour
         isAxis = CheckAxisInput(inputIdentifier) 
             && 
             CheckAxisInput(latestInputList);
-        isButtonPressed = AxisMatch(X_AXIS_INDEX) && AxisMatch(Y_AXIS_INDEX);
+        isInputPressed = AxisMatch(X_AXIS_INDEX) && AxisMatch(Y_AXIS_INDEX);
 
-        isButton = CheckButtonInput(inputIdentifier) 
-            && 
+        isButton =
+            CheckButtonInput(inputIdentifier)
+            &&
             CheckButtonInput(latestInputList);
-        isButtonPressed = ButtonMatch();
+        isInputPressed = ButtonMatch();
+
+        isKey = CheckKeyInput(inputIdentifier)
+            &&
+            CheckKeyInput(latestInputList);
+        isInputPressed = KeyMatch();
 
         UpdateButtonUI();
     }
 
     private void UpdateLatestInputList()
     {
-        if (inputQueueIndex >= theReadGamepad.CheckQueueLength()) { return; }
+        if (inputQueueIndex >= theInputReaderController.CheckQueueLength())
+        {
+            return;
+        }
 
-        latestInputList = theReadGamepad.CheckInput(inputQueueIndex);
+        latestInputList = 
+            theInputReaderController.CheckInput(inputQueueIndex);
         ++inputQueueIndex;
     }
 
@@ -87,13 +107,13 @@ public class ButtonController : MonoBehaviour
          * check if they match.
          */
         // Check if this is an axis before proceeding.
-        if (!isAxis) { return isButtonPressed; }
+        if (!isAxis) { return isInputPressed; }
 
         // If the axis is not the same, return the same button status.
         if (inputIdentifier[AXIS_NAME_INDEX]
             !=
             latestInputList[AXIS_NAME_INDEX])
-        { return isButtonPressed; }
+        { return isInputPressed; }
 
         // If the axis is at rest, return false.
         if (int.Parse(latestInputList[X_AXIS_INDEX]) == 0
@@ -117,13 +137,32 @@ public class ButtonController : MonoBehaviour
         /* Return whether or not the input identifies a button and not an 
          * axis.
          */
-        // Return the value that was already set if the inputList has 
-        // not been set or this is not an axis input.
+        
         if (inputList == null) { return false; }
         if (inputList[BUTTON_IDENTIFIER_INDEX] != BUTTON_IDENTIFIER)
         { return false; }
 
         return true;
+    }
+
+    private bool CheckKeyInput(List<string> inputList)
+    {
+        /* Return whether or not the input identifies a button and not an 
+         * axis.
+         */
+
+        if (inputList == null) { return false; }
+        foreach (
+            KeyIdentifier keyIdentifier in 
+            (KeyIdentifier[])Enum.GetValues(typeof(KeyIdentifier))
+            )
+        {
+            if (inputList[KEY_IDENTIFIER_INDEX] == keyIdentifier.ToString())
+                { return true; }
+        }
+
+        // If the input identifier was not found, return false.
+        return false;
     }
 
     private bool ButtonMatch()
@@ -132,7 +171,7 @@ public class ButtonController : MonoBehaviour
          * If a button is pressed and the input for this button is not an 
          * axis, check if they match.
          */
-        if (!isButton) { return isButtonPressed; }
+        if (!isButton) { return isInputPressed; }
 
         int inputSign;
         int input;
@@ -165,7 +204,33 @@ public class ButtonController : MonoBehaviour
         if (inputSign != buttonSign && input == button) { return false; }
 
         // In all other cases, the button is still in its previous state.
-        return isButtonPressed;
+        return isInputPressed;
+    }
+
+    private bool KeyMatch()
+    {
+        /*
+         * If a key is pressed and the input for this button is not an 
+         * axis, check if they match.
+         */
+        if (!isKey) { return isInputPressed; }
+
+        string inputState;
+        string input;
+        string keyState;
+        string key;
+
+        inputState = latestInputList[KEY_IDENTIFIER_INDEX];
+        input = latestInputList[KEY_INDEX];
+        keyState = inputIdentifier[KEY_IDENTIFIER_INDEX];
+        key = inputIdentifier[KEY_INDEX];
+
+        // Check for matches and toggle the button state.
+        if (inputState == keyState && input == key) { return true; }
+        if (inputState != keyState && input == key) { return false; }
+
+        // In all other cases, the button is still in its previous state.
+        return isInputPressed;
     }
 
     private void UpdateButtonUI()
@@ -176,9 +241,9 @@ public class ButtonController : MonoBehaviour
          */
 
         // Do no processing if the button state is still the same.
-        if (previousButtonPressState == isButtonPressed) { return; }
+        if (previousInputPressState == isInputPressed) { return; }
 
-        if (isButtonPressed)
+        if (isInputPressed)
         {
             buttonAlpha = BUTTON_ALPHA_ON;
             buttonColors.normalColor =
@@ -203,7 +268,7 @@ public class ButtonController : MonoBehaviour
                 buttonColors;
         }
 
-        previousButtonPressState = isButtonPressed;
+        previousInputPressState = isInputPressed;
     }
 
     public int CheckButtonQueueIndex()
@@ -222,7 +287,7 @@ public class ButtonController : MonoBehaviour
          * When the button is pressed, set the button to read whatever input 
          * comes in next.
          */
-        inputIdentifier = theReadGamepad.GetInput(inputQueueIndex);
+        inputIdentifier = theInputReaderController.GetInput(inputQueueIndex);
 
         // Unselect the button.
         EventSystem.current.SetSelectedGameObject(null);
