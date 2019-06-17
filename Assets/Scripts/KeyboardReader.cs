@@ -50,6 +50,8 @@ public class KeyboardReader : MonoBehaviour
         if (!isEnabled)
         {
             enableKeyboardButtonText.text = "Enable Keyboard";
+            // Close the keyboard error if the keyboard process has ended.
+            theErrorController.CloseKeyboardError();
         }
         else
         {
@@ -152,6 +154,11 @@ public class KeyboardReader : MonoBehaviour
             if (!isEnabled)
             {
                 isEnabled = true;
+            }
+            else
+            {
+                // Make a pop-up appear prompting the user for keyboard input.
+                theErrorController.KeyboardError();
             }
         }
     }
