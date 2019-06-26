@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,13 +12,14 @@ public class GamepadReader : MonoBehaviour
     
     Process gamepadProc;
     InputReaderController theInputReaderController;
+    GamepadSeeker theGamepadSeeker;
 
     private void Start()
     {
         SetCurrentDirectory();
         GetInputReader();
-        Thread readInputThread = new Thread(RunGamepadReader);
-        readInputThread.Start();
+        GetGamepadSeeker();
+        RunGamepadReaders();
 
     }
 
@@ -41,7 +43,27 @@ public class GamepadReader : MonoBehaviour
             GetComponentInParent<InputReaderController>();
     }
 
-    private void RunGamepadReader()
+    private void GetGamepadSeeker()
+    {
+        theGamepadSeeker = FindObjectOfType<GamepadSeeker>();
+    }
+
+    private void RunGamepadReaders()
+    {
+        List<string> gamepadList = theGamepadSeeker.GetGamepadList();
+
+        // Do not process if the gamepad list is empty or null.
+        if (gamepadList is null || !gamepadList.Any()) { return; }
+        
+        foreach (string gamepad in gamepadList)
+        {
+            Thread readInputThread = 
+                new Thread(() => RunGamepadReader(gamepad));
+            readInputThread.Start();
+        }
+    }
+
+    private void RunGamepadReader(string gamepad)
     {
         /*
          * Start the process to read gamepad input.
@@ -49,7 +71,7 @@ public class GamepadReader : MonoBehaviour
         ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = EXE_PATH,
-            Arguments = EXE_ARGS,
+            Arguments = EXE_ARGS + " " + gamepad,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
