@@ -9,18 +9,28 @@ public class GamepadReader : MonoBehaviour
 {
     const string EXE_PATH = "stdbuf";
     const string EXE_ARGS = "-oL ./joystick_SNESInputTracker";
-    
+    const int GAMEPAD_NUMBER_START_INDEX = 13;
+
     Process gamepadProc;
     InputReaderController theInputReaderController;
     GamepadSeeker theGamepadSeeker;
+    List<int> enabledGamepadList;
+    DebugDisplay theDebugDisplay;
+    string readString;
 
     private void Start()
     {
-        SetCurrentDirectory();
+        theDebugDisplay = FindObjectOfType<DebugDisplay>();
+        enabledGamepadList = new List<int>();
         GetInputReader();
         GetGamepadSeeker();
         RunGamepadReaders();
 
+    }
+
+    private void Update()
+    {
+        RunGamepadReaders();
     }
 
     private void OnApplicationQuit()
@@ -54,12 +64,28 @@ public class GamepadReader : MonoBehaviour
 
         // Do not process if the gamepad list is empty or null.
         if (gamepadList is null || !gamepadList.Any()) { return; }
-        
+
         foreach (string gamepad in gamepadList)
         {
-            Thread readInputThread = 
-                new Thread(() => RunGamepadReader(gamepad));
-            readInputThread.Start();
+            int gamepadIndex = int.Parse(
+                gamepad.Substring(
+                    GAMEPAD_NUMBER_START_INDEX, gamepad.Length -
+                    GAMEPAD_NUMBER_START_INDEX)
+                    );
+
+            if (enabledGamepadList is null ||
+                !enabledGamepadList.Contains(gamepadIndex)
+                )
+            {
+                // Default the directory to where the gamepad reader file is.
+                SetCurrentDirectory();
+                Thread readInputThread =
+                    new Thread(() => RunGamepadReader(gamepad));
+                readInputThread.Start();
+
+                // Add the index of the gamepad to enabledGamepadList.
+                enabledGamepadList.Add(gamepadIndex);
+            }
         }
     }
 
@@ -76,14 +102,14 @@ public class GamepadReader : MonoBehaviour
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
-
         gamepadProc = Process.Start(startInfo);
 
         StreamReader reader = gamepadProc.StandardOutput;
         while (!gamepadProc.HasExited)
         {
+            readString = reader.ReadLine();
             theInputReaderController.
-                AddToInputQueue(reader.ReadLine().Split(',').ToList());
+                AddToInputQueue(readString.Split(',').ToList());
             theInputReaderController.SetLookingForInput(false);
         }
     }
