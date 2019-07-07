@@ -70,6 +70,7 @@ public class ButtonController : MonoBehaviour
         isInputPressed = KeyMatch();
 
         UpdateButtonUI();
+        
     }
 
     private void UpdateLatestInputList()

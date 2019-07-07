@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Timers;
 using UnityEngine;
 
@@ -6,10 +7,11 @@ public class InputReaderController : MonoBehaviour
 {
     const int TRIM_QUEUE_INTERVAL_IN_MILLISECONDS = 60000;
     const int ITEM_COUNT_TO_TRIGGER_TRIM_QUEUE = 10000;
+    const int CHECK_INPUT_DELAY = 100;
 
     List<List<string>> inputQueue;
     ButtonController[] theButtonControllers;
-    Timer trimTimer;
+    System.Timers.Timer trimTimer;
 
     bool isSomeoneLookingForInput = false;
 
@@ -82,7 +84,7 @@ public class InputReaderController : MonoBehaviour
 
     private void TrimQueueTimer()
     {
-        trimTimer = new Timer();
+        trimTimer = new System.Timers.Timer();
         trimTimer.Elapsed += new ElapsedEventHandler(TrimQueue);
         trimTimer.Interval = TRIM_QUEUE_INTERVAL_IN_MILLISECONDS;
         trimTimer.AutoReset = false;
@@ -115,7 +117,8 @@ public class InputReaderController : MonoBehaviour
         // Wait for the input to be available.
         while (isSomeoneLookingForInput)
         {
-            continue;
+            // Set a delay to improve CPU performance.
+            Thread.Sleep(CHECK_INPUT_DELAY);
         }
         return inputQueue[index];
     }

@@ -12,7 +12,8 @@ public class KeyboardReader : MonoBehaviour
     const string GKSUDO_PROCESS_EXE_ARGS = "-oL ./checkForGksudo.sh";
     const string KEYBOARD_PROCESS_EXE_ARGS = "-oL ./keyboardReader.sh";
     const float BUTTON_UPDATE_DELAY = 0f;
-    const float BUTTON_UPDATE_REPEAT = .25f;
+    const float BUTTON_UPDATE_REPEAT = .5f;
+    const int CHECK_FOR_INPUT_DELAY = 1000;
 
     bool isGksudoInstalled = false;
     bool isEnabled = false;
@@ -119,7 +120,9 @@ public class KeyboardReader : MonoBehaviour
         string input;
         while (true)
         {
-            while (!isEnabled) { continue; }
+            // Set a delay for checking the enabled status (save CPU%).
+            Thread.Sleep(CHECK_FOR_INPUT_DELAY);
+            while (!isEnabled) { Thread.Sleep(CHECK_FOR_INPUT_DELAY); }
             isRunning = true;
 
             keyboardProc = Process.Start(keyboardProcStartInfo);

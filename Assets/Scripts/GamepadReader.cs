@@ -10,6 +10,8 @@ public class GamepadReader : MonoBehaviour
     const string EXE_PATH = "stdbuf";
     const string EXE_ARGS = "-oL ./joystick_SNESInputTracker";
     const int GAMEPAD_NUMBER_START_INDEX = 13;
+    const float READER_UPDATE_DELAY = 0f;
+    const float READER_UPDATE_REPEAT = .25f;
 
     Process gamepadProc;
     InputReaderController theInputReaderController;
@@ -24,13 +26,11 @@ public class GamepadReader : MonoBehaviour
         enabledGamepadList = new List<int>();
         GetInputReader();
         GetGamepadSeeker();
+        InvokeRepeating(
+            "RunGamepadReaders", READER_UPDATE_DELAY, READER_UPDATE_REPEAT
+            );
         RunGamepadReaders();
 
-    }
-
-    private void Update()
-    {
-        RunGamepadReaders();
     }
 
     private void OnApplicationQuit()

@@ -6,17 +6,17 @@ using UnityEngine;
 public class GamepadSeeker : MonoBehaviour
 {
     const string GAMEPAD_DRIVER_PATH = "/dev/input/js";
+    const float UPDATE_LIST_DELAY = 0f;
+    const float UPDATE_LIST_REPEAT = 1f;
     List<string> gamepadList;
     
     private void Awake()
     {
         gamepadList = new List<string>();
         UpdateGamepadList();
-    }
-    
-    private void Update()
-    {
-        UpdateGamepadList();
+        InvokeRepeating(
+            "UpdateGamepadList", UPDATE_LIST_DELAY, UPDATE_LIST_REPEAT
+            );
     }
 
     private void UpdateGamepadList()
