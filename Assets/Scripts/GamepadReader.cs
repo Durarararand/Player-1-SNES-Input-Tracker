@@ -9,11 +9,12 @@ public class GamepadReader : MonoBehaviour
 {
     const string EXE_PATH = "stdbuf";
     const string EXE_ARGS = "-oL ./joystick_SNESInputTracker";
+    const string PROC_TERMINATING_STRING = "EOF";
     const int GAMEPAD_NUMBER_START_INDEX = 13;
     const float READER_UPDATE_DELAY = 0f;
-    const float READER_UPDATE_REPEAT = .25f;
+    const float READER_UPDATE_REPEAT = .10f;
 
-    Process gamepadProc;
+    List<Process> gamepadProcs;
     InputReaderController theInputReaderController;
     GamepadSeeker theGamepadSeeker;
     List<int> enabledGamepadList;
@@ -24,6 +25,7 @@ public class GamepadReader : MonoBehaviour
     {
         theDebugDisplay = FindObjectOfType<DebugDisplay>();
         enabledGamepadList = new List<int>();
+        gamepadProcs = new List<Process>();
         GetInputReader();
         GetGamepadSeeker();
         InvokeRepeating(
@@ -31,6 +33,16 @@ public class GamepadReader : MonoBehaviour
             );
         RunGamepadReaders();
 
+    }
+
+    private void Update()
+    {
+        string gamepadListString = "";
+        foreach (int item in enabledGamepadList)
+        {
+            gamepadListString += item.ToString() + ", ";
+        }
+        theDebugDisplay.SetDebugText(gamepadListString);
     }
 
     private void OnApplicationQuit()
@@ -94,6 +106,12 @@ public class GamepadReader : MonoBehaviour
         /*
          * Start the process to read gamepad input.
          */
+        int gamepadIndex = int.Parse(
+            gamepad.Substring(
+                GAMEPAD_NUMBER_START_INDEX, gamepad.Length -
+                GAMEPAD_NUMBER_START_INDEX)
+                );
+
         ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = EXE_PATH,
@@ -102,20 +120,35 @@ public class GamepadReader : MonoBehaviour
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
+        Process gamepadProc;
         gamepadProc = Process.Start(startInfo);
+        bool gamepadProcRunning = true;
+        gamepadProcs.Add(gamepadProc);
 
         StreamReader reader = gamepadProc.StandardOutput;
-        while (!gamepadProc.HasExited)
+        while (gamepadProcRunning && !gamepadProc.HasExited)
         {
             readString = reader.ReadLine();
-            theInputReaderController.
-                AddToInputQueue(readString.Split(',').ToList());
-            theInputReaderController.SetLookingForInput(false);
+            if (readString == PROC_TERMINATING_STRING)
+            {
+                gamepadProcRunning = false;
+            }
+            else
+            {
+                theInputReaderController.
+                    AddToInputQueue(readString.Split(',').ToList());
+                theInputReaderController.SetLookingForInput(false);
+            }
         }
+        enabledGamepadList.Remove(gamepadIndex);
+        gamepadProcs.Remove(gamepadProc);
     }
 
     private void KillInputReaderOnExit()
     {
-        gamepadProc.Kill();
+        foreach(Process gamepadProc in gamepadProcs)
+        {
+            gamepadProc.Kill();
+        }
     }
 }

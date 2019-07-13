@@ -144,6 +144,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    printf("EOF\n");
+
     close(js);
     return 0;
 }
