@@ -7,16 +7,17 @@ using UnityEngine.UI;
 
 public class ButtonController : MonoBehaviour
 {
+    const int CONTROLLER_IDENTIFIER_INDEX = 0;
     const string AXIS_IDENTIFIER = "Axis";
-    const int AXIS_IDENTIFIER_INDEX = 0;
-    const int AXIS_NAME_INDEX = 1;
-    const int X_AXIS_INDEX = 2;
-    const int Y_AXIS_INDEX = 3;
+    const int AXIS_IDENTIFIER_INDEX = 1;
+    const int AXIS_NAME_INDEX = 2;
+    const int X_AXIS_INDEX = 3;
+    const int Y_AXIS_INDEX = 4;
     const int KEY_IDENTIFIER_INDEX = 0;
     const int KEY_INDEX = 1;
     const string BUTTON_IDENTIFIER = "Button";
-    const int BUTTON_IDENTIFIER_INDEX = 0;
-    const int BUTTON_INDEX = 1;
+    const int BUTTON_IDENTIFIER_INDEX = 1;
+    const int BUTTON_INDEX = 2;
     const float BUTTON_ALPHA_ON = 0.6f;
     const float BUTTON_ALPHA_OFF = 0f;
 
@@ -113,7 +114,11 @@ public class ButtonController : MonoBehaviour
         // If the axis is not the same, return the same button status.
         if (inputIdentifier[AXIS_NAME_INDEX]
             !=
-            latestInputList[AXIS_NAME_INDEX])
+            latestInputList[AXIS_NAME_INDEX]
+            ||
+            inputIdentifier[CONTROLLER_IDENTIFIER_INDEX]
+            !=
+            latestInputList[CONTROLLER_IDENTIFIER_INDEX])
         { return isInputPressed; }
 
         // If the axis is at rest, return false.
@@ -148,8 +153,8 @@ public class ButtonController : MonoBehaviour
 
     private bool CheckKeyInput(List<string> inputList)
     {
-        /* Return whether or not the input identifies a button and not an 
-         * axis.
+        /* 
+         * Return whether or not the input identifies a key and not an axis.
          */
 
         if (inputList == null) { return false; }
@@ -172,7 +177,12 @@ public class ButtonController : MonoBehaviour
          * If a button is pressed and the input for this button is not an 
          * axis, check if they match.
          */
-        if (!isButton) { return isInputPressed; }
+        if (
+            !isButton || latestInputList[CONTROLLER_IDENTIFIER_INDEX] 
+            != 
+            inputIdentifier[CONTROLLER_IDENTIFIER_INDEX]
+            )
+        { return isInputPressed; }
 
         int inputSign;
         int input;

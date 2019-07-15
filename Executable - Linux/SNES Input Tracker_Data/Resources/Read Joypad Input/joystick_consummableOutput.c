@@ -131,11 +131,15 @@ int main(int argc, char *argv[])
         switch (event.type)
         {
             case JS_EVENT_BUTTON:
+                printf(device);
+                printf(",");
                 printf("Button, %s%u\n", event.value ? "" : "-", event.number);
                 break;
             case JS_EVENT_AXIS:
                 axis = get_axis_state(&event, axes);
                 if (axis < 3)
+                    printf(device);
+                    printf(",");
                     printf("Axis, %u, %6d, %6d\n", axis, axes[axis].x, axes[axis].y);
                 break;
             default:
