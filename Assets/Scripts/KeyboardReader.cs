@@ -165,4 +165,6 @@ public class KeyboardReader : MonoBehaviour
             }
         }
     }
+
+    public bool IsKeyboardEnabled() { return isEnabled; }
 }

@@ -151,4 +151,12 @@ public class GamepadReader : MonoBehaviour
             gamepadProc.Kill();
         }
     }
+
+    public bool AreControllersPluggedIn()
+    {
+        if (enabledGamepadList != null && enabledGamepadList.Any())
+        { return true; }
+        else
+        { return false; }
+    }
 }

@@ -8,6 +8,7 @@ public class ErrorController : MonoBehaviour
 {
     const string GKSU_ERROR_TEXT = "Gksu must be installed in order to enable keyboard input.";
     const string DISABLE_KEYBOARD_TEXT = "Press any key to disable keyboard input.";
+    const string ATTACH_INPUT_TEXT = "Please plug in a controller or enable keyboard input.";
 
     GameObject errorWindow;
     TextMeshProUGUI errorText;

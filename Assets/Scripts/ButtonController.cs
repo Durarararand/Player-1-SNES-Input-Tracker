@@ -28,7 +28,10 @@ public class ButtonController : MonoBehaviour
     }
 
     DebugDisplay theDebugDisplay;
+    ErrorController theErrorController;
     InputReaderController theInputReaderController;
+    GamepadReader theGamepadReader;
+    KeyboardReader theKeyboardReader;
     ColorBlock buttonColors;
     float buttonAlpha;
 
@@ -44,8 +47,11 @@ public class ButtonController : MonoBehaviour
     private void Start()
     {
         theDebugDisplay = FindObjectOfType<DebugDisplay>();
+        theErrorController = FindObjectOfType<ErrorController>();
         theInputReaderController = 
             FindObjectOfType<InputReaderController>();
+        theGamepadReader = FindObjectOfType<GamepadReader>();
+        theKeyboardReader = FindObjectOfType<KeyboardReader>();
         buttonColors = GetComponentInParent<Button>().colors;
     }
 
@@ -282,6 +288,13 @@ public class ButtonController : MonoBehaviour
         previousInputPressState = isInputPressed;
     }
 
+    private bool IsAnythingPluggedIn()
+    {
+        if (theGamepadReader.AreControllersPluggedIn()) { return true; }
+        if (theKeyboardReader.IsKeyboardEnabled()) { return true; }
+        return false;
+    }
+
     public int CheckButtonQueueIndex()
     {
         return inputQueueIndex;
@@ -298,11 +311,18 @@ public class ButtonController : MonoBehaviour
          * When the button is pressed, set the button to read whatever input 
          * comes in next.
          */
-        inputIdentifier = theInputReaderController.GetInput(inputQueueIndex);
+        if (!IsAnythingPluggedIn())
+        {
+            // Unselect the button.
+            EventSystem.current.SetSelectedGameObject(null);
+            return;
+        }
+        else
+        {
+            inputIdentifier = theInputReaderController.GetInput(inputQueueIndex);
 
-        // Unselect the button.
-        EventSystem.current.SetSelectedGameObject(null);
-
-        
+            // Unselect the button.
+            EventSystem.current.SetSelectedGameObject(null);
+        }
     }
 }
