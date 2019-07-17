@@ -315,6 +315,8 @@ public class ButtonController : MonoBehaviour
         {
             // Unselect the button.
             EventSystem.current.SetSelectedGameObject(null);
+            // Show the error window.
+            theErrorController.NoInputError();
             return;
         }
         else
