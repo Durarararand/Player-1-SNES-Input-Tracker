@@ -15,11 +15,11 @@ public class KeyboardReader : MonoBehaviour
     const float BUTTON_UPDATE_REPEAT = .5f;
     const int CHECK_FOR_INPUT_DELAY = 1000;
 
+    string keyboardWorkingDirectory;
     bool isGksudoInstalled = false;
     bool isEnabled = false;
     bool isRunning = false;
-
-    DebugDisplay theDebugDisplay;
+    
     Process gksudoProc;
     Process keyboardProc;
     ProcessStartInfo gksudoProcStartInfo;
@@ -30,7 +30,6 @@ public class KeyboardReader : MonoBehaviour
 
     private void Start()
     {
-        theDebugDisplay = FindObjectOfType<DebugDisplay>();
         theErrorController = FindObjectOfType<ErrorController>();
         enableKeyboardButtonText = 
             GameObject.Find("Enable Keyboard").
@@ -44,6 +43,11 @@ public class KeyboardReader : MonoBehaviour
         GetInputReader();
         Thread readInputThread = new Thread(RunKeyboardReader);
         readInputThread.Start();
+    }
+
+    private void OnApplicationQuit()
+    {
+        KillKeyboardReader();
     }
 
     private void UpdateButtonText()
@@ -62,10 +66,9 @@ public class KeyboardReader : MonoBehaviour
 
     private void SetCurrentDirectory()
     {
-        Directory.SetCurrentDirectory(
+        keyboardWorkingDirectory = 
             Application.dataPath +
-            "/Resources/Read Keyboard Input/"
-            );
+            "/Resources/Read Keyboard Input/";
     }
 
     private void SetupProcessStartInfo()
@@ -74,6 +77,7 @@ public class KeyboardReader : MonoBehaviour
         {
             FileName = EXE_PATH,
             Arguments = GKSUDO_PROCESS_EXE_ARGS,
+            WorkingDirectory = keyboardWorkingDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
@@ -83,6 +87,7 @@ public class KeyboardReader : MonoBehaviour
         {
             FileName = EXE_PATH,
             Arguments = KEYBOARD_PROCESS_EXE_ARGS,
+            WorkingDirectory = keyboardWorkingDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
@@ -124,7 +129,7 @@ public class KeyboardReader : MonoBehaviour
             Thread.Sleep(CHECK_FOR_INPUT_DELAY);
             while (!isEnabled) { Thread.Sleep(CHECK_FOR_INPUT_DELAY); }
             isRunning = true;
-
+            
             keyboardProc = Process.Start(keyboardProcStartInfo);
 
             StreamReader reader = keyboardProc.StandardOutput;

@@ -2,11 +2,13 @@ ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
     - ButtonController
+    - ClearInput
     - DebugDisplay
     - ErrorController
     - ErrorWindow
     - GamepadReader
     - GamepadSeeker
+    - InputIndexController
     - InputReaderController
     - KeyboardReader
     Unity.TextMeshPro.dll:
@@ -76,21 +78,25 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 9760}
     - Class: 114
-      Script: {instanceID: 9792}
+      Script: {instanceID: 9766}
     - Class: 114
-      Script: {instanceID: 9852}
+      Script: {instanceID: 9794}
     - Class: 114
-      Script: {instanceID: 10088}
+      Script: {instanceID: 9854}
     - Class: 114
-      Script: {instanceID: 10098}
+      Script: {instanceID: 10090}
     - Class: 114
-      Script: {instanceID: 10170}
+      Script: {instanceID: 10100}
     - Class: 114
-      Script: {instanceID: 10234}
+      Script: {instanceID: 10172}
     - Class: 114
-      Script: {instanceID: 10470}
+      Script: {instanceID: 10236}
     - Class: 114
-      Script: {instanceID: 10488}
+      Script: {instanceID: 10472}
+    - Class: 114
+      Script: {instanceID: 10490}
+    - Class: 114
+      Script: {instanceID: 29134}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -606,6 +612,12 @@ ScriptsOnlyBuild:
     className: TMP_SpriteAsset
   - hash:
       serializedVersion: 2
+      Hash: 8c656c7541fb11d949f8b62fe2da0184
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: InputIndexController
+  - hash:
+      serializedVersion: 2
       Hash: c3d3430df9e3ea95e3e3d587961390fb
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
@@ -790,6 +802,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: ClearInput
   platform: 24
   scenePathNames:
   - Assets/Scenes/Controller.unity

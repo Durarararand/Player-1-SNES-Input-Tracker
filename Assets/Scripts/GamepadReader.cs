@@ -15,34 +15,25 @@ public class GamepadReader : MonoBehaviour
     const float READER_UPDATE_REPEAT = .10f;
 
     List<Process> gamepadProcs;
+    InputIndexController theInputIndexController;
     InputReaderController theInputReaderController;
     GamepadSeeker theGamepadSeeker;
     List<int> enabledGamepadList;
-    DebugDisplay theDebugDisplay;
+    string gamepadDirectory;
     string readString;
 
-    private void Start()
+    private void Awake()
     {
-        theDebugDisplay = FindObjectOfType<DebugDisplay>();
+        theInputIndexController = FindObjectOfType<InputIndexController>();
         enabledGamepadList = new List<int>();
         gamepadProcs = new List<Process>();
         GetInputReader();
         GetGamepadSeeker();
+        SetCurrentDirectory();
         InvokeRepeating(
             "RunGamepadReaders", READER_UPDATE_DELAY, READER_UPDATE_REPEAT
             );
         RunGamepadReaders();
-
-    }
-
-    private void Update()
-    {
-        string gamepadListString = "";
-        foreach (int item in enabledGamepadList)
-        {
-            gamepadListString += item.ToString() + ", ";
-        }
-        theDebugDisplay.SetDebugText(gamepadListString);
     }
 
     private void OnApplicationQuit()
@@ -53,10 +44,9 @@ public class GamepadReader : MonoBehaviour
    
     private void SetCurrentDirectory()
     {
-        Directory.SetCurrentDirectory(
+        gamepadDirectory = 
             Application.dataPath + 
-            "/Resources/Read Joypad Input/"
-            );
+            "/Resources/Read Joypad Input/";
     }
 
     private void GetInputReader()
@@ -89,8 +79,6 @@ public class GamepadReader : MonoBehaviour
                 !enabledGamepadList.Contains(gamepadIndex)
                 )
             {
-                // Default the directory to where the gamepad reader file is.
-                SetCurrentDirectory();
                 Thread readInputThread =
                     new Thread(() => RunGamepadReader(gamepad));
                 readInputThread.Start();
@@ -116,6 +104,7 @@ public class GamepadReader : MonoBehaviour
         {
             FileName = EXE_PATH,
             Arguments = EXE_ARGS + " " + gamepad,
+            WorkingDirectory = gamepadDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
@@ -135,13 +124,42 @@ public class GamepadReader : MonoBehaviour
             }
             else
             {
-                theInputReaderController.
-                    AddToInputQueue(readString.Split(',').ToList());
-                theInputReaderController.SetLookingForInput(false);
+                List<string> splitStringList;
+                splitStringList = readString.Split(',').ToList();
+                // Verify whether the input meets or exceeds the axis 
+                // deadzone threshold.  Only add the input to the queue if it 
+                // meets or exceeds the threshold or no the buttons on the UI 
+                // are not being set.
+                if (!theInputReaderController.CheckLookingForInput() 
+                    || 
+                    MeetsAxisThreshold(splitStringList)
+                    )
+                {
+                    theInputReaderController.AddToInputQueue(splitStringList);
+                    theInputReaderController.SetLookingForInput(false);
+                }
             }
         }
         enabledGamepadList.Remove(gamepadIndex);
         gamepadProcs.Remove(gamepadProc);
+    }
+
+    private bool MeetsAxisThreshold(List<string> stringList)
+    {
+        // Return true this is not an axis.
+        if (stringList[theInputIndexController.AXIS_IDENTIFIER_INDEX] 
+            != 
+            theInputIndexController.AXIS_IDENTIFIER) { return true; }
+        // Return true if the input meets the threshold.
+        if (Mathf.Abs(int.Parse(stringList[theInputIndexController.X_AXIS_INDEX])) 
+            >= theInputIndexController.AXIS_DEADZONE
+            ||
+            Mathf.Abs(int.Parse(stringList[theInputIndexController.Y_AXIS_INDEX])) 
+            >= theInputIndexController.AXIS_DEADZONE)
+        { return true; }
+
+        // Otherwise return false.
+        return false;
     }
 
     private void KillInputReaderOnExit()
