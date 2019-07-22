@@ -74,29 +74,29 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 9618}
     - Class: 114
-      Script: {instanceID: 9758}
+      Script: {instanceID: 9746}
     - Class: 114
       Script: {instanceID: 9760}
     - Class: 114
-      Script: {instanceID: 9766}
+      Script: {instanceID: 9762}
     - Class: 114
-      Script: {instanceID: 9794}
+      Script: {instanceID: 9768}
     - Class: 114
-      Script: {instanceID: 9854}
+      Script: {instanceID: 9796}
     - Class: 114
-      Script: {instanceID: 10090}
+      Script: {instanceID: 9856}
     - Class: 114
-      Script: {instanceID: 10100}
+      Script: {instanceID: 10092}
     - Class: 114
-      Script: {instanceID: 10172}
+      Script: {instanceID: 10102}
     - Class: 114
-      Script: {instanceID: 10236}
+      Script: {instanceID: 10174}
     - Class: 114
-      Script: {instanceID: 10472}
+      Script: {instanceID: 10238}
     - Class: 114
-      Script: {instanceID: 10490}
+      Script: {instanceID: 10474}
     - Class: 114
-      Script: {instanceID: 29134}
+      Script: {instanceID: 10492}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -594,6 +594,12 @@ ScriptsOnlyBuild:
     className: AnalyticsTracker
   - hash:
       serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: ClearInput
+  - hash:
+      serializedVersion: 2
       Hash: 0fb27be807aa299702f28ad0bcad1f46
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
@@ -802,12 +808,6 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
-  - hash:
-      serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: ClearInput
   platform: 24
   scenePathNames:
   - Assets/Scenes/Controller.unity

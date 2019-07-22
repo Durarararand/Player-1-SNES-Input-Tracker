@@ -26,7 +26,7 @@ int main(void)
     }
 
 
-    while (1) {
+    while (0 == system("pidof -x \"keyboardReader.sh\" > /dev/null")) {
         n = read(fd, &ev, sizeof ev);
         if (n == (ssize_t)-1) {
             if (errno == EINTR)
@@ -44,7 +44,5 @@ int main(void)
             printf("%s,0x%04x (%d)\n", evval[ev.value], (int)ev.code, (int)ev.code);
 	fflush(stdout);
     }
-    fflush(stdout);
-    fprintf(stderr, "%s.\n", strerror(errno));
-    return EXIT_FAILURE;
+    return 0;
 }
